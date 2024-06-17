@@ -1,0 +1,13 @@
+[package]
+name = "immn"
+description = "Simple Redirects for people with Awesome Middle Names"
+version = "0.1.0"
+edition = "2021"
+authors = [ "NTmatter <NTmatter@gmail.com" ]
+publish = false
+
+[dependencies]
+lambda_http = "0.11.4"
+
+tokio = { version = "1", features = ["macros"] }
+
