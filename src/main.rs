@@ -1,24 +1,46 @@
-use lambda_http::{run, service_fn, tracing, Body, Error, Request, RequestExt, Response};
+use lambda_http::{http::Uri, run, service_fn, tracing, Body, Error, Request, Response};
 
-/// This is the main body for the function.
-/// Write your code inside it.
-/// There are some code example in the following URLs:
-/// - https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples
+enum Action {
+    Redirect(Uri),
+    Html(&'static str),
+    Unknown(Option<&'static str>),
+}
+
+/// Match hostnames and uris, returning redirects or body content.
 async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
-    // Extract some useful information from the request
-    let who = event
-        .query_string_parameters_ref()
-        .and_then(|params| params.first("name"))
-        .unwrap_or("world");
-    let message = format!("Hello {who}, this is an AWS Lambda HTTP request");
+    let uri = event.uri();
 
-    // Return something that implements IntoResponse.
-    // It will be serialized to the right response event automatically by the runtime
-    let resp = Response::builder()
-        .status(200)
-        .header("content-type", "text/html")
-        .body(message.into())
-        .map_err(Box::new)?;
+    // Host matches
+    let response = match uri.host() {
+        Some("localhost") => Action::Html("Local Development Server"),
+        Some("lambda.is-my-middle.name") => {
+            Action::Html("<strong>TODO</strong>: Placeholder for the actual homepage.")
+        }
+        Some("check-known.is-my-middle.name") => Action::Redirect(Uri::from_static(
+            "https://lambda.is-my-middle.name?utm-campaign=unit-test",
+        )),
+        _ => Action::Unknown(Some("Unknown URL or Hostname")),
+    };
+
+    let builder = Response::builder().header("content-type", "text/html");
+    let builder = match response {
+        Action::Redirect(uri) => builder
+            .status(301)
+            .header("Location", uri.to_string())
+            .body(
+                format!(
+                    r#"<head><meta http-equiv="Refresh" content="0; URL={}" /></head>"#,
+                    uri
+                )
+                .into(),
+            ),
+        Action::Html(body) => builder.status(200).body(body.into()),
+        Action::Unknown(Some(message)) => builder.status(404).body(message.into()),
+        Action::Unknown(None) => builder.status(404).body("Unknown host or uri".into()),
+    };
+
+    let resp = builder.map_err(Box::new)?;
+
     Ok(resp)
 }
 
