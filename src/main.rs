@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 use lambda_http::{http::Uri, run, service_fn, tracing, Body, Error, Request, Response};
 
 enum Action {
