@@ -12,3 +12,34 @@ cargo lambda watch
 ```
 
 After a brief build, the lambda function will be available at http://localhost:9000/
+
+Lambda Service Policy, additionally limited by `AWSLambda_FullAccess` permissions boundary. Adapted from [Cargo Lambda Deploy - User Profile](https://www.cargo-lambda.info/commands/deploy.html#user-profile):
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:AttachRolePolicy",
+        "iam:UpdateAssumeRolePolicy",
+        "iam:PassRole"
+      ],
+      "Resource": [
+        "arn:aws:iam::{AWS:Account}:role/AWSLambdaBasicExecutionRole",
+        "arn:aws:iam::{AWS:Account}:role/cargo-lambda-role*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "lambda:CreateFunction",
+        "lambda:UpdateFunctionCode",
+        "lambda:GetFunction"
+      ],
+      "Resource": "arn:aws:lambda::{AWS:Account}:function:{function-name}"
+    }
+  ]
+}
+```

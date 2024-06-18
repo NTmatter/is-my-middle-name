@@ -1,0 +1,44 @@
+# Adapted from Cargo Lambda - Automating deployments: https://www.cargo-lambda.info/guide/automating-deployments.html
+# Adapted from Rust Analyzer ci.yaml: https://github.com/rust-lang/rust-analyzer/blob/master/.github/workflows/ci.yaml#L63-L67
+
+name: deploy-lambda
+
+# Stick to a manual trigger for now.
+#   see: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch
+on: workflow_dispatch
+
+jobs:
+  deploy-lambda:
+    runs-on: ubuntu-latest
+    env:
+      RUST_CHANNEL: stable
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        run: |
+          rustup update --no-self-update ${{ env.RUST_CHANNEL }}
+          rustup default ${{ env.RUST_CHANNEL }}
+          rustup component add --toolchain ${{ env.RUST_CHANNEL }} rustfmt rust-src
+
+      # TODO: Install Rust problem matcher and use for clippy/rustfmt steps.
+      #   see: https://github.com/rust-lang/rust-analyzer/blob/master/.github/workflows/ci.yaml#L68-L71
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-build-cache
+
+      - name: Release lambda
+        run: |
+          pip install cargo-lambda
+          cargo lambda build --release
+          cargo lambda deploy
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
