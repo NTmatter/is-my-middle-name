@@ -13,7 +13,7 @@ cargo lambda watch
 
 After a brief build, the lambda function will be available at http://localhost:9000/
 
-Lambda Service Policy, additionally limited by `AWSLambda_FullAccess` permissions boundary. Adapted from [Cargo Lambda Deploy - User Profile](https://www.cargo-lambda.info/commands/deploy.html#user-profile):
+Lambda Service Policy, additionally limited by `AWSLambda_FullAccess` permissions boundary after the first deploy. Adapted from [Cargo Lambda Deploy - User Profile](https://www.cargo-lambda.info/commands/deploy.html#user-profile):
 ```json
 {
   "Version": "2012-10-17",

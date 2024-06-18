@@ -25,7 +25,7 @@ jobs:
       #   see: https://github.com/rust-lang/rust-analyzer/blob/master/.github/workflows/ci.yaml#L68-L71
 
       - name: Cache cargo registry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         continue-on-error: false
         with:
           path: |
@@ -42,3 +42,4 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # AWS_ACCOUNT: # Ensure the repository secret exists to keep it out of the logs.
