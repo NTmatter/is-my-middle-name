@@ -24,6 +24,9 @@ fn choose_action(uri: &Uri) -> Action {
     };
 
     let action = match hostname {
+        "danger.is-my-middle.name" => Action::Redirect(Uri::from_static(
+            "https://www.youtube.com/watch?v=TH_JRjJtNSw",
+        )),
         "localhost" => Action::Html("Local Development Server".to_string()),
         "lambda.is-my-middle.name" => {
             Action::Html("<strong>TODO</strong>: Placeholder for the actual homepage.".to_string())
