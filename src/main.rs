@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
+use lambda_http::{Body, Error, http::Uri, Request, Response, run, service_fn, tracing};
 use lambda_http::http::StatusCode;
-use lambda_http::{http::Uri, run, service_fn, tracing, Body, Error, Request, Response};
 
 /// Allow a small set of internal redirects.
 /// TODO Consider increasing the MAX_COUNT as we are traversing and coalescing our internal graph.
@@ -16,33 +16,35 @@ enum Action {
 
 /// Choose a redirect, static content, or Unknown
 fn choose_action(uri: &Uri) -> Action {
+    use Action::*;
+
     let Some(hostname) = uri.host() else {
-        return Action::Error(
+        return Error(
             StatusCode::INTERNAL_SERVER_ERROR,
             "No hostname was specified".to_string(),
         );
     };
 
     let action = match hostname {
-        "danger.is-my-middle.name" => Action::Redirect(Uri::from_static("https://www.youtube.com/watch?v=TH_JRjJtNSw")),
-        "chaos.is-my-middle.name" => Action::Redirect(Uri::from_static("https://nathanwpyle.threadless.com/designs/strange-planet-special-product-chaos-is-how-i-learn/home/stretched-canvas")),
-        "localhost" => Action::Html("<h1>Local Development Server</h1>".to_string()),
-        "lambda.is-my-middle.name" => Action::Html("<strong>TODO</strong>: Placeholder for the actual homepage.".to_string()),
-        "cards.is-my-middle.name" => Action::Html(include_str!("cards.html").to_string()),
+        "danger.is-my-middle.name" => Redirect(Uri::from_static("https://www.youtube.com/watch?v=TH_JRjJtNSw")),
+        "chaos.is-my-middle.name" => Redirect(Uri::from_static("https://nathanwpyle.threadless.com/designs/strange-planet-special-product-chaos-is-how-i-learn/home/stretched-canvas")),
+        "localhost" => Html("<h1>Local Development Server</h1>".to_string()),
+        "lambda.is-my-middle.name" => Html("<strong>TODO</strong>: Placeholder for the actual homepage.".to_string()),
+        "cards.is-my-middle.name" => Html(include_str!("cards.html").to_string()),
         // TODO Detect port from current request and change hostname.
-        "check-known.is-my-middle.name" => Action::Redirect(Uri::from_static(
+        "check-known.is-my-middle.name" => Redirect(Uri::from_static(
             "https://lambda.is-my-middle.name?utm-campaign=unit-test",
         )),
-        _ => Action::Unknown(Some("Unknown URL or Hostname".to_string())),
+        _ => Unknown(Some("Unknown URL or Hostname".to_string())),
     };
 
     // Detect immediate recursion.
-    if let Action::Redirect(redirect_uri) = &action {
+    if let Redirect(redirect_uri) = &action {
         if redirect_uri
             .host()
             .is_some_and(|redirect_host| redirect_host.eq(hostname))
         {
-            return Action::Error(
+            return Error(
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Redirects to self. Aborting early to avoid recursion.".to_string(),
             );
