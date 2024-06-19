@@ -28,6 +28,7 @@ fn choose_action(uri: &Uri) -> Action {
         "chaos.is-my-middle.name" => Action::Redirect(Uri::from_static("https://nathanwpyle.threadless.com/designs/strange-planet-special-product-chaos-is-how-i-learn/home/stretched-canvas")),
         "localhost" => Action::Html("<h1>Local Development Server</h1>".to_string()),
         "lambda.is-my-middle.name" => Action::Html("<strong>TODO</strong>: Placeholder for the actual homepage.".to_string()),
+        "cards.is-my-middle.name" => Action::Html(include_str!("cards.html").to_string()),
         // TODO Detect port from current request and change hostname.
         "check-known.is-my-middle.name" => Action::Redirect(Uri::from_static(
             "https://lambda.is-my-middle.name?utm-campaign=unit-test",

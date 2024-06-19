@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta lang="en" />
+    <title>cards.is-my-middle.name</title>
+    <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js" integrity="sha384-CHvehSuS0IW8Qj9IlAETJXbHf/SEi62VXMgODXi9p3CC3NUIuThj1Y0uAFnl30VB" crossorigin="anonymous"></script>
+    <style>
+        h1 {
+            font-family: sans-serif;
+        }
+
+        .card {
+            border: 1mm grey solid;
+            position: relative;
+        }
+
+        .portrait {
+            width: 50mm;
+            height: 90mm;
+        }
+
+        .portrait .domain {
+            width: 45mm;
+            position: absolute;
+            left: 2.5mm;
+            top: 12.5mm;
+            font-family: sans-serif;
+            line-height: 175%;
+        }
+
+        .portrait .domain .subdomain {
+            display: inline-flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 6mm;
+            font-weight: 1000;
+            font-variant: small-caps;
+        }
+
+        .portrait .domain .immn-domain, .portrait .domain .immn-name {
+            padding-left: 2mm;
+            letter-spacing: 0.25mm;
+        }
+
+        .qr {
+            background-color: darkmagenta;
+            height: 45mm;
+            width: 45mm;
+            position: absolute;
+        }
+
+        .portrait .qr {
+            left: 3mm;
+            bottom: 2.5mm;
+
+            /* Ensure tracking markers are visible when held with left hand */
+            transform: rotate(180deg);
+        }
+    </style>
+
+    <script>
+        const DEFAULT_SUBDOMAIN = "SubDomain";
+        // Can't specify size in mm. Best guess with pixel count.
+        const QR_CODE_SIZE_PX = "175";
+
+        function updateSubdomain() {
+
+
+            let input = document.getElementById("subdomain-input");
+
+            let string;
+            if(!input || !input.value || input.value.trim() === "") {
+                string = DEFAULT_SUBDOMAIN;
+            } else {
+                string = input.value.trim();
+            }
+
+            // Remove existing children and add new letters, one span for each.
+            let span = document.getElementById("subdomain");
+            span.replaceChildren();
+            for (const char of string) {
+                let letter = document.createElement("span");
+                letter.appendChild(document.createTextNode(char));
+
+                span.appendChild(letter);
+            }
+
+            // Use upper-case string for more efficient alphanumeric output.
+            let uri = `https://${string}.is-my-middle.name`.toUpperCase();
+            let qr = document.getElementById('qr');
+            qr.replaceChildren();
+            let qrCode = new QRCodeStyling({
+                type: 'svg',
+                width: QR_CODE_SIZE_PX,
+                height: QR_CODE_SIZE_PX,
+                data: uri,
+                qrOptions: {
+                    // Library favours Alphanumeric when possible, but allow switch to Binary if needed.
+                    // mode: 'Alphanumeric',
+
+                    // Favour larger feature size
+                    errorCorrectionLevel: 'M'
+                },
+                dotsOptions: {
+                    type: 'extra-rounded'
+                }
+            });
+            qrCode.append(qr);
+        }
+    </script>
+</head>
+<body onload="updateSubdomain()">
+<h1>cards.is-my-middle.name</h1>
+<label for="subdomain-input">Domain:</label> <input id="subdomain-input" type="text" placeholder="Your Domain Here" onkeyup="updateSubdomain()"/>
+<hr />
+<div id="portrait" class="card portrait">
+    <div class="domain">
+        <span id="subdomain" class="subdomain"></span><br />
+        <span class="immn-domain">.is-my-middle</span><br />
+        <span class="immn-name">.name</span>
+    </div>
+    <div id="qr" class="qr"></div>
+</div>
+</body>
+</html>
